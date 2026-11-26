@@ -1,0 +1,13 @@
+### model
+model_name_or_path: Qwen/Qwen3-4B-Instruct-2507
+adapter_name_or_path: saves/qwen3-4b/lora/translate
+template: qwen3_nothink
+trust_remote_code: true
+
+### method
+finetuning_type: lora
+
+### export
+export_dir: models/qwen3-4b-translate
+export_size: 5
+export_legacy_format: false

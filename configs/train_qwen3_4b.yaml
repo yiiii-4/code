@@ -1,0 +1,40 @@
+### model
+model_name_or_path: Qwen/Qwen3-4B-Instruct-2507
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 16
+lora_alpha: 32
+lora_target: all
+quantization_method: bitsandbytes
+quantization_bit: 4
+
+### dataset
+dataset: mc2_interpreter
+template: qwen3_nothink
+cutoff_len: 512
+preprocessing_num_workers: 2
+dataloader_num_workers: 0
+overwrite_cache: true
+
+### output
+output_dir: saves/qwen3-4b/lora/translate
+logging_steps: 10
+save_steps: 500
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: false
+report_to: none
+
+### train
+per_device_train_batch_size: 4
+gradient_accumulation_steps: 2
+learning_rate: 2.0e-4
+num_train_epochs: 2.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.05
+bf16: true
+ddp_timeout: 180000000

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>MC2 同传</title>
+<style>
+  :root { --bg:#0f1115; --card:#1a1d24; --accent:#4f8cff; --text:#e8eaf0; --muted:#8a90a0; --border:#2a2e37; }
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+         min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:24px 16px 32px; }
+  h1 { font-size:20px; font-weight:600; margin-bottom:4px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:18px; }
+  #status { background:var(--card); border-radius:12px; padding:14px 16px; width:100%; max-width:420px;
+            text-align:center; color:var(--muted); font-size:14px; margin-bottom:14px; min-height:48px; }
+  #log { width:100%; max-width:420px; display:flex; flex-direction:column; gap:12px; flex:1; overflow-y:auto; margin-bottom:18px; }
+  .msg { background:var(--card); border-radius:12px; padding:14px 16px; }
+  .msg .en { font-size:14px; color:var(--muted); margin-bottom:6px; word-break:break-word; }
+  .msg .zh { font-size:18px; color:#fff; line-height:1.4; }
+  .btns { width:100%; max-width:420px; display:flex; gap:12px; }
+  .btn { flex:1; border:none; border-radius:16px; padding:18px; font-size:17px; font-weight:600; cursor:pointer;
+         display:flex; align-items:center; justify-content:center; }
+  #talk { background:var(--accent); color:#fff; }
+  #filebtn { background:var(--card); color:var(--text); border:1px solid var(--border); }
+  #talk:active { transform:scale(.97); }
+  .hidden { display:none !important; }
+  input[type=file] { display:none; }
+</style>
+</head>
+<body>
+  <h1>MC2 同传</h1>
+  <div class="sub">听懂对方(英语 → 中文)</div>
+  <div id="status">按住「说话」,让对方讲英语,松开即翻译</div>
+  <div id="log"></div>
+  <div class="btns">
+    <button id="talk" class="btn">🎤 按住说话</button>
+    <label id="filebtn" class="btn">📁 录音上传
+      <input type="file" accept="audio/*" capture="microphone">
+    </label>
+  </div>
+
+<script>
+const statusEl = document.getElementById('status');
+const logEl = document.getElementById('log');
+const talkBtn = document.getElementById('talk');
+const fileInput = document.querySelector('input[type=file]');
+
+function setStatus(t){ statusEl.textContent = t; }
+function addMsg(en, zh){
+  const d = document.createElement('div');
+  d.className = 'msg';
+  const e = document.createElement('div'); e.className='en'; e.textContent = en;
+  const z = document.createElement('div'); z.className='zh'; z.textContent = zh;
+  d.appendChild(e); d.appendChild(z);
+  logEl.insertBefore(d, logEl.firstChild);
+}
+function b64toBlob(b64, mime){
+  const bin = atob(b64);
+  const u8 = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
+  return new Blob([u8], {type:mime});
+}
+function play(b64, mime){
+  const blob = b64toBlob(b64, mime);
+  const url = URL.createObjectURL(blob);
+  const a = new Audio(url);
+  a.onended = ()=>URL.revokeObjectURL(url);
+  a.play().catch(e=>setStatus('播放失败:'+e));
+}
+async function send(blob){
+  setStatus('翻译中…');
+  const fd = new FormData();
+  fd.append('file', blob, 'audio');
+  try{
+    const r = await fetch('/api/translate', {method:'POST', body:fd});
+    const j = await r.json();
+    if(j.ok){ addMsg(j.en, j.zh); play(j.audio_b64, j.audio_mime); setStatus('完成'); }
+    else setStatus(j.error || '出错');
+  }catch(e){ setStatus('连不上电脑:'+e.message); }
+}
+
+// 方式一:MediaRecorder 按住说话(需安全上下文,普通 http 下会自动隐藏)
+let rec=null, chunks=[], stream=null;
+const canRecord = window.isSecureContext && navigator.mediaDevices && window.MediaRecorder;
+if(!canRecord){
+  talkBtn.classList.add('hidden');
+  setStatus('普通 http 下按住说话不可用,请点「录音上传」按钮');
+}
+async function ensureStream(){
+  if(!stream) stream = await navigator.mediaDevices.getUserMedia({audio:true});
+  return stream;
+}
+function start(){
+  chunks=[];
+  ensureStream().then(s=>{
+    const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : '';
+    rec = mime ? new MediaRecorder(s,{mimeType:mime}) : new MediaRecorder(s);
+    rec.ondataavailable = e=>chunks.push(e.data);
+    rec.onstop = ()=>{ const blob = new Blob(chunks,{type:rec.mimeType||'audio/webm'}); send(blob); };
+    rec.start();
+    setStatus('录音中…松开结束');
+  }).catch(e=>setStatus('麦克风不可用:'+e.message));
+}
+function stop(){ if(rec && rec.state!=='inactive'){ rec.stop(); } }
+
+talkBtn.addEventListener('mousedown', e=>{e.preventDefault(); start();});
+talkBtn.addEventListener('mouseup', stop);
+talkBtn.addEventListener('mouseleave', stop);
+talkBtn.addEventListener('touchstart', e=>{e.preventDefault(); start();});
+talkBtn.addEventListener('touchend', e=>{e.preventDefault(); stop();});
+
+// 方式二:原生录音上传(普通 http 也能用,最稳)
+fileInput.addEventListener('change', ()=>{
+  if(fileInput.files.length){ send(fileInput.files[0]); fileInput.value=''; }
+});
+</script>
+</body>
+</html>

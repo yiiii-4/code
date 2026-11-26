@@ -1,0 +1,6 @@
+### model
+model_name_or_path: models/qwen3-4b-translate
+template: qwen3_nothink
+trust_remote_code: true
+quantization_method: bitsandbytes
+quantization_bit: 4

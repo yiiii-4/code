@@ -1,0 +1,62 @@
+[
+  {
+    "instruction": "把下面的中文翻译成英语,只输出译文。",
+    "input": "今天天气很好,我们出去散步吧。",
+    "output": "The weather is nice today. Let's go for a walk."
+  },
+  {
+    "instruction": "把下面的英语翻译成中文,只输出译文。",
+    "input": "The weather is nice today. Let's go for a walk.",
+    "output": "今天天气很好,我们出去散步吧。"
+  },
+  {
+    "instruction": "把下面的中文翻译成英语,只输出译文。",
+    "input": "这个多少钱?",
+    "output": "How much is this?"
+  },
+  {
+    "instruction": "把下面的英语翻译成中文,只输出译文。",
+    "input": "How much is this?",
+    "output": "这个多少钱?"
+  },
+  {
+    "instruction": "把下面的中文翻译成英语,只输出译文。",
+    "input": "请问洗手间在哪里?",
+    "output": "Excuse me, where is the restroom?"
+  },
+  {
+    "instruction": "把下面的英语翻译成中文,只输出译文。",
+    "input": "Excuse me, where is the restroom?",
+    "output": "请问洗手间在哪里?"
+  },
+  {
+    "instruction": "把下面的中文翻译成英语,只输出译文。",
+    "input": "能帮我拍张照片吗?",
+    "output": "Could you take a photo for me?"
+  },
+  {
+    "instruction": "把下面的英语翻译成中文,只输出译文。",
+    "input": "Could you take a photo for me?",
+    "output": "能帮我拍张照片吗?"
+  },
+  {
+    "instruction": "把下面的中文翻译成英语,只输出译文。",
+    "input": "我迷路了,你能帮我吗?",
+    "output": "I'm lost. Can you help me?"
+  },
+  {
+    "instruction": "把下面的英语翻译成中文,只输出译文。",
+    "input": "I'm lost. Can you help me?",
+    "output": "我迷路了,你能帮我吗?"
+  },
+  {
+    "instruction": "把下面的中文翻译成英语,只输出译文。",
+    "input": "菜很好吃,谢谢款待。",
+    "output": "The food is delicious. Thanks for the meal."
+  },
+  {
+    "instruction": "把下面的英语翻译成中文,只输出译文。",
+    "input": "The food is delicious. Thanks for the meal.",
+    "output": "菜很好吃,谢谢款待。"
+  }
+]
